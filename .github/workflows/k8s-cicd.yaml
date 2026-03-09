@@ -1,6 +1,5 @@
 name: K8s CI/CD Pipeline
-
-# Set condition
+#set condition for master branch
 on:
   push:
     branches: ["master"]
