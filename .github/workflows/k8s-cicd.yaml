@@ -1,0 +1,92 @@
+name: K8s CI/CD Pipeline
+
+# Set condition
+on:
+  push:
+    branches: ["master"]
+
+env:
+  DOCKER_IMAGE_NAME: k8s-reactjs-itp1
+  HELM_REPO: lengsenghong/first-helm-chart-repo
+  REPLICAS: 5
+  DOMAIN: earthdx-k8s.lengsenghong.com
+
+# Build docker image and push it into docker hub
+jobs:
+  # CI Job
+  ci-job:
+    runs-on: self-hosted
+    environment: DOCKER_ENV
+    steps: 
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Using commit SHA
+        run: |
+          echo "TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
+          
+      - name: Show the SHA values
+        run: |
+          echo "TAG = ${{ env.TAG }}"
+          
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.TOKEN }}
+          
+      - name: Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.TAG }}
+          cache-from: type=registry,ref=${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:cache
+          cache-to: type=registry,ref=${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:cache,mode=max
+      
+  # CD Job
+  cd-job:
+    needs: ci-job
+    runs-on: self-hosted
+    environment: HELM_ENV
+    steps:
+      - name: Set commit SHA
+        run: echo "TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
+        
+      - name: Checkout Helm repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.HELM_REPO }}
+          path: helm_repo
+          token: ${{ secrets.GIT_TOKEN }}
+          
+      - name: Update Helm chart
+        run: |
+          cd helm_repo
+          echo "Update replicaCount"
+          yq -i ".replicaCount=${{ env.REPLICAS }}" values.yaml
+          echo "Enable ingress"
+          yq -i '.ingress.enabled=true' values.yaml
+          echo "Add ingress annotation"
+          yq -i '.ingress.annotations."cert-manager.io/cluster-issuer"="letsencrypt-prod"' values.yaml
+          echo "Set ingress class"
+          yq -i '.ingress.className="nginx"' values.yaml
+          echo "Update ingress host"
+          yq -i '.ingress.hosts[0].host="${{ env.DOMAIN }}"' values.yaml
+          echo "Update TLS"
+          yq -i '.ingress.tls=[{"secretName": "${{ env.DOCKER_IMAGE_NAME }}-tls", "hosts": ["${{ env.DOMAIN }}"]}]' values.yaml
+          echo "Update repository username/image_name"
+          yq -i ".image.repository=\"${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}\"" values.yaml
+          echo "Update pathType"
+          yq -i '.ingress.hosts[0].paths[0].pathType="Prefix"' values.yaml
+          echo "Update image tag"
+          yq -i ".image.tag=\"${{ env.TAG }}\"" values.yaml
+          
+      - name: Commit & Push Helm changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update helm to use image ${{ env.TAG }}"
+          repository: helm_repo
+          
+      - name: Clean up
+        run: rm -rf helm_repo
