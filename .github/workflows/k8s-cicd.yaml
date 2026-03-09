@@ -1,5 +1,6 @@
 name: K8s CI/CD Pipeline
-#set condition for master branch
+#set condition for when to run the action file 
+
 on:
   push:
     branches: ["master"]
