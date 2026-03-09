@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKER_IMAGE_NAME: k8s-reactjs-itp1
-  HELM_REPO: lengsenghong/first-helm-chart-repo
+  HELM_REPO: lengsenghong/gitops_repo_itp_gen1
   REPLICAS: 5
   DOMAIN: earthdx-k8s.lengsenghong.com
 
@@ -72,9 +72,9 @@ jobs:
           echo "Set ingress class"
           yq -i '.ingress.className="nginx"' values.yaml
           echo "Update ingress host"
-          yq -i '.ingress.hosts[0].host="${{ env.DOMAIN }}"' values.yaml
+          yq -i ".ingress.hosts[0].host=\"${{ env.DOMAIN }}\"" values.yaml
           echo "Update TLS"
-          yq -i '.ingress.tls=[{"secretName": "${{ env.DOCKER_IMAGE_NAME }}-tls", "hosts": ["${{ env.DOMAIN }}"]}]' values.yaml
+          yq -i ".ingress.tls=[{\"secretName\": \"${{ env.DOCKER_IMAGE_NAME }}-tls\", \"hosts\": [\"${{ env.DOMAIN }}\"]}]" values.yaml
           echo "Update repository username/image_name"
           yq -i ".image.repository=\"${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}\"" values.yaml
           echo "Update pathType"
