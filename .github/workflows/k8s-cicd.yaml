@@ -1,5 +1,5 @@
 name: K8s CI/CD Pipeline
-# Set condition
+# Set condition for when to 
 on:
   push:
     branches: ["master"]
@@ -8,7 +8,7 @@ env:
   DOCKER_IMAGE_NAME: k8s-reactjs-itp1
   HELM_REPO: lengsenghong/gitops_repo_itp_gen1
   REPLICAS: 5
-  DOMAIN: earthdx-k8s.lengsenghong.com
+  DOMAIN: earthdx-demo.lengsenghong.com
 
 # Build docker image and push it into docker hub
 jobs:
