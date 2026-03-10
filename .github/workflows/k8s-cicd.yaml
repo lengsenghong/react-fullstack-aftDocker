@@ -14,7 +14,7 @@ env:
 jobs:
   # CI Job
   ci-job:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest 
     environment: DOCKER_SECRET 
     steps: 
       - name: Checkout Code
@@ -46,7 +46,7 @@ jobs:
   # CD.  Job 
   cd-job:
     needs: ci-job
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: DOCKER_SECRET 
     steps:
       - name: Set commit SHA
