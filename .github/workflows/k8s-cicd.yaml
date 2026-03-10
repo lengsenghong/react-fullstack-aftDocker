@@ -7,7 +7,7 @@ on:
 env:
   DOCKER_IMAGE_NAME: k8s-reactjs-itp1
   HELM_REPO: lengsenghong/gitops_repo_itp_gen1
-  REPLICAS: 5
+  REPLICAS: 3
   DOMAIN: earthdx-demo.lengsenghong.com
 
 # Build docker image and push it into docker hub
