@@ -46,7 +46,7 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:cache
           cache-to: type=registry,ref=${{ secrets.USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:cache,mode=max
       
-  # CD.  Job 
+  # CD Job 
   cd-job:
     needs: ci-job
     runs-on: self-hosted
