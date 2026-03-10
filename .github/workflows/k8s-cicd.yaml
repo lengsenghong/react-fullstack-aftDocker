@@ -18,7 +18,7 @@ jobs:
     environment: DOCKER_SECRET 
     steps: 
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Using commit SHA
         run: |
@@ -56,7 +56,7 @@ jobs:
         run: echo "TAG=${GITHUB_SHA::8}" >> $GITHUB_ENV
         
       - name: Checkout Helm repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.HELM_REPO }}
           path: helm_repo
